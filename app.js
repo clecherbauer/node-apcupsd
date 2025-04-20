@@ -7,14 +7,13 @@
 */
 
 'use strict';
-var mqttbroker = { address: 'localhost', port: '1883' };
 var topic = 'ups'; // topic basename
-var devicename = 'YourUPS'; // default, will be overwritten with upsname value
+var devicename = 'apc-floor'; // default, will be overwritten with upsname value
 var pollint = 10000; // poll every 10 seconds, only changed values will be published
 
 var exec = require('child_process').exec;
 var mqtt = require('mqtt');
-var mclient = mqtt.createClient(mqttbroker.port, mqttbroker.address);
+var mclient = mqtt.connect("mqtt://localhost")
 var curvalues = {}; // holds current values
 
 function executeCmd(cmd, callback) {
@@ -40,7 +39,7 @@ function executeCmd(cmd, callback) {
 
 function poll() {
 
-    var wanted = ['upsname', 'serialno', 'status', 'linev', 'linefreq', 'loadpct', 'battv', 'bcharge'];
+    var wanted = ['upsname', 'serialno', 'status', 'linev', 'linefreq', 'loadpct', 'battv', 'bcharge', 'timeleft'];
 
     executeCmd('apcaccess', function(err, response) {
       if (err) {
