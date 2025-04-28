@@ -66,7 +66,8 @@ function poll() {
             }
           }
         });
-        mqttClient.publish(topic+'/'+devicename+'/last-update', new Date().toISOString(), {retain: true});
+        const now = new Date().toISOString().split('.')[0] + 'Z';
+        mqttClient.publish(topic+'/'+devicename+'/last-update', now, {retain: true});
       }
       setTimeout(poll, pollint);
     })
