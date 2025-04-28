@@ -13,7 +13,8 @@ var pollint = 10000; // poll every 10 seconds, only changed values will be publi
 
 var exec = require('child_process').exec;
 var mqtt = require('mqtt');
-var mqttClient = mqtt.connect("mqtt://localhost")
+var mqttUrl = process.env.MQTT_URL || "mqtt://localhost";
+var mqttClient = mqtt.connect(mqttUrl)
 var curvalues = {}; // holds current values
 
 function executeCmd(cmd, callback) {
