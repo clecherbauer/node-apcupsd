@@ -8,18 +8,17 @@
 
 'use strict';
 var topic = 'ups'; // topic basename
-var devicename = 'apc-floor'; // default, will be overwritten with upsname value
+var devicename = 'apc-ups'; // default, will be overwritten with upsname value
 var pollint = 10000; // poll every 10 seconds, only changed values will be published
 
 var exec = require('child_process').exec;
 var mqtt = require('mqtt');
-var mclient = mqtt.connect("mqtt://localhost")
+var mqttClient = mqtt.connect("mqtt://localhost")
 var curvalues = {}; // holds current values
 
 function executeCmd(cmd, callback) {
 
     exec(cmd, function (err, stdout, stderror) {
-      // console.log('stdout: %s', output);
       if (err) {
         callback(err);
       } 
@@ -46,36 +45,29 @@ function poll() {
         console.error(err);
       }
       else {
-        // console.log(response);
         var lines = response.trim().split("\n");
- 
-        // loop over every line
+
         lines.forEach(function (line) {
-          // assign values
           var stats = line.split(' : ');
           var label = stats[0].toLowerCase();
           var value = stats[1];
 
           // remove surrounding spaces
           label = label.replace(/(^\s+|\s+$)/g, '');
-          // if found as wanted value, store it
           if (wanted.indexOf(label) > -1) {
             value = value.replace(/(^\s+|\s+$)/g, '');
             if (label == 'upsname') {
               devicename = value;
             }
-            // check if value is known, if not store and publish value
             if (curvalues[label] != value) {
               curvalues[label] = value;
-              // console.log(value+" changed!");
-              // publish value
-              mclient.publish(topic+'/'+devicename+'/'+label, value, {retain: true});
+              mqttClient.publish(topic+'/'+devicename+'/'+label, value, {retain: true});
               if (err) throw err;
             }
           }
         });
+        mqttClient.publish(topic+'/'+devicename+'/last-update', new Date().toISOString(), {retain: true});
       }
-      // console.log(curvalues);
       setTimeout(poll, pollint);
     })
 }
